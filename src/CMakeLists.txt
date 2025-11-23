@@ -27,6 +27,14 @@ target_link_libraries(appDeviceTreeExplorer
     dtparser
 )
 
+# Copy the dtparser library next to the executable after build
+add_custom_command(
+    TARGET appDeviceTreeExplorer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:dtparser> $<TARGET_FILE_DIR:appDeviceTreeExplorer>
+    DEPENDS dtparser
+)
+
 include(GNUInstallDirs)
 install(TARGETS appDeviceTreeExplorer
     BUNDLE DESTINATION .
