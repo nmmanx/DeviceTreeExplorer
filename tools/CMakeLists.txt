@@ -1,12 +1,16 @@
+add_library(lexer_headers INTERFACE)
+
 if (WIN32)
-file(GLOB FLEX_BISON_HINTS "${CMAKE_CURRENT_SOURCE_DIR}/win_flex_bison-*")
+file(GLOB FLEX_BISON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/win_flex_bison-*")
 find_program(flex
     NAME win_flex.exe
-    HINTS ${FLEX_BISON_HINTS} REQUIRED)
+    HINTS ${FLEX_BISON_DIR} REQUIRED)
+
+target_include_directories(lexer_headers INTERFACE ${FLEX_BISON_DIR})
 
 find_program(bison
     NAME win_bison.exe
-    HINTS ${FLEX_BISON_HINTS} REQUIRED)
+    HINTS ${FLEX_BISON_DIR} REQUIRED)
 elseif(UNIX)
 find_program(flex REQUIRED)
 find_program(bison REQUIRED)
