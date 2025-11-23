@@ -23,7 +23,7 @@ typedef std::shared_ptr<const dtparser::Element> ElementRef;
 %define parse.error verbose
 
 %code {
-#include <dtparser/Driver.h>
+#include <Driver.h>
 }
 
 %define api.value.type variant

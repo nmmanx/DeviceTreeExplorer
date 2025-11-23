@@ -1,7 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
-#include "dtparser/Driver.h"
+#include "dtparser/DeviceTreeSource.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,10 +20,9 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
     engine.load(url);
 
-    qDebug() << "Starting Device Tree Parser Test";
-    dtparser::IDriver* drv = new dtparser::Driver();
-    drv->parse("C:\\Users\\nmman\\Workspace\\DeviceTreeExplorer\\test.dts", nullptr);
-    delete drv;
+    // Testing
+    dtparser::DeviceTreeSource dts("C:\\Users\\nmman\\Workspace\\DeviceTreeExplorer\\test.dts");
+    dts.parse(nullptr);
 
     return app.exec();
 }

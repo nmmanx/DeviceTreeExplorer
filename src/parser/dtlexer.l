@@ -4,7 +4,7 @@
 %{
 #include <stdio.h>
 #include <string>
-#include "dtparser/Driver.h"
+#include "Driver.h"
 
 using token = yy::parser::token;
 

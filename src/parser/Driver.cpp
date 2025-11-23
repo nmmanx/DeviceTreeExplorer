@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "dtparser/Driver.h"
+#include "Driver.h"
 
 namespace dtparser {
 

@@ -32,5 +32,6 @@ add_library(dtparser SHARED
 
 add_dependencies(dtparser gen_lexer)
 
-target_include_directories(dtparser PUBLIC include)
+target_include_directories(dtparser PRIVATE include/private)
+target_include_directories(dtparser PUBLIC include/public)
 target_include_directories(dtparser PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/gen)

@@ -18,6 +18,7 @@ class DeviceTreeSource
 {
 public:
     DeviceTreeSource(const fs::path& filePath, std::vector<fs::path> searchPaths);
+    DeviceTreeSource(const fs::path& filePath);
 
     ParseResult parse(DeviceTree *dt);
 
