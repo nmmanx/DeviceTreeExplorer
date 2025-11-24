@@ -33,8 +33,19 @@ BLANK	([ \t\r])
 }
 
 [a-zA-Z0-9,"."_+?#-]+{BLANK}*= {
+    int i = 0;
+    while (yytext[i] != ' ' && yytext[i] != '=') i++;
+    yytext[i] = '\0';
     yylval->build<std::string>(yytext);
     return token::PROP_NAME;
+}
+
+[a-zA-Z0-9_]+{BLANK}*: {
+    int i = 0;
+    while (yytext[i] != ' ' && yytext[i] != ':') i++;
+    yytext[i] = '\0';
+    yylval->build<std::string>(yytext);
+    return token::NODE_LABEL;
 }
 
 ([a-zA-Z0-9,\._+-]+(@{U32})*)|"/" {
@@ -42,13 +53,9 @@ BLANK	([ \t\r])
     return token::NODE_NAME;
 }
 
-[a-zA-Z0-9_]+: {
-    yylval->build<std::string>(yytext);
-    return token::NODE_LABEL;
-}
-
 \"[^\"]+\" {
-    yylval->build<std::string>(yytext);
+    yytext[strlen(yytext) - 1] = '\0';
+    yylval->build<std::string>(yytext + 1);
     return token::PROP_STR_VALUE;
 }
 

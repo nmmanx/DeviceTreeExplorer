@@ -8,35 +8,33 @@ Driver::Driver() {
     std::cout << "Driver initialized." << std::endl;
 }
 
-ElementRef Driver::newDirective(const std::string& directive)
+uint32_t Driver::newDirective(const std::string& directive, 
+    const std::vector<std::string> &args,
+    const yy::parser::location_type &loc)
 {
     std::cout << "newDirective: " << directive << std::endl;
-    return nullptr;
+    return 0;
 }
 
-ElementRef Driver::newNode(const std::string &name, const std::string &label)
+uint32_t Driver::newNode(const std::string &name, const std::string &label,
+    const yy::parser::location_type &loc)
 {
     std::cout << "newNode: " << name << " (label: " << label << ")" << std::endl;
-    return nullptr;
+    return 0;
 }
 
-ElementRef Driver::newNode(const std::string &name)
-{
-    std::cout << "newNode: " << name << std::endl;
-    return nullptr;
-}
-
-ElementRef Driver::newProperty(const std::string &name, const std::vector<std::string> &values)
+uint32_t Driver::newProperty(const std::string &name, const std::string &label, const std::vector<PropertyValue> &values,
+    const yy::parser::location_type &loc)
 {
     std::cout << "newProperty: " << name << " with " << values.size() << " values" << std::endl;
-    return nullptr;
+    return 0;
 }
 
-void Driver::buildHierarchy(const ElementRef &child, const ElementRef &parent)
+void Driver::buildHierarchy(uint32_t child, uint32_t parent)
 {
 }
 
-void Driver::buildHierarchy(const ElementRef &parent, const std::vector<ElementRef> &chilren)
+void Driver::buildHierarchy(uint32_t parent, const std::vector<uint32_t> &chilren)
 {
 }
 
@@ -63,6 +61,21 @@ ParseResult Driver::parse(const char* dtsFile, DeviceTree *dt)
 
     scan_end();
     return result;
+}
+
+SourceLocation Driver::convertLocation(const yy::parser::location_type &loc)
+{
+    SourceLocation targetLoc;
+    if (loc.begin.filename) {
+        targetLoc.filename = *(loc.begin.filename);
+    } else {
+        targetLoc.filename = "";
+    }
+    targetLoc.beginLine = static_cast<uint32_t>(loc.begin.line);
+    targetLoc.beginColumn = static_cast<uint32_t>(loc.begin.column);
+    targetLoc.endLine = static_cast<uint32_t>(loc.end.line);
+    targetLoc.endColumn = static_cast<uint32_t>(loc.end.column);
+    return targetLoc;
 }
 
 } // namespace dtparser

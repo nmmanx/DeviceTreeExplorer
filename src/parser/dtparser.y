@@ -9,10 +9,7 @@
 
 namespace dtparser {
     class IDriver;
-    struct Element;
 }
-
-typedef std::shared_ptr<const dtparser::Element> ElementRef;
 }
 
 %parse-param {dtparser::IDriver *driver}
@@ -44,10 +41,10 @@ typedef std::shared_ptr<const dtparser::Element> ElementRef;
 %token <std::string> PROP_ENCODED_ARRAY_ELEMENT
 %token <std::string> PROP_STR_VALUE
 
-%nterm <ElementRef> directive
-%nterm <ElementRef> node
-%nterm <std::vector<ElementRef>> node_nody
-%nterm <ElementRef> property
+%nterm <uint32_t> directive
+%nterm <uint32_t> node
+%nterm <std::vector<uint32_t>> node_nody
+%nterm <uint32_t> property
 
 %nterm <std::vector<std::string>> property_values
 
@@ -58,26 +55,26 @@ typedef std::shared_ptr<const dtparser::Element> ElementRef;
 toplevel:
     %empty {}
     | toplevel directive TERMINATOR {
-        driver->buildHierarchy($2, nullptr);
+        driver->buildHierarchy($2, 0);
     } |
     toplevel node TERMINATOR {
-        driver->buildHierarchy($2, nullptr);
+        driver->buildHierarchy($2, 0);
     }
     ;
 
 directive:
     DIRECTIVE_DTS_VERSION { 
-        $$ = driver->newDirective($1);
+        $$ = driver->newDirective($1, {}, @$);
     }
     ;
 
 node:
     NODE_LABEL NODE_NAME NODE_BEGIN node_nody NODE_END {
-        $$ = driver->newNode($2, $1);
+        $$ = driver->newNode($2, $1, @$);
         driver->buildHierarchy($$, $4);
     } | 
     NODE_NAME NODE_BEGIN node_nody NODE_END {
-        $$ = driver->newNode($1);
+        $$ = driver->newNode($1, "", @$);
         driver->buildHierarchy($$, $3);
     }
     ;
@@ -94,10 +91,10 @@ node_nody:
 
 property:
     PROP_NAME PROP_VALUE_BEGIN property_values PROP_VALUE_END {
-        $$ = driver->newProperty($1, $3);
+        $$ = driver->newProperty($1, "", {}, @$);
     } |
     PROP_NAME PROP_STR_VALUE {
-        $$ = driver->newProperty($1, { $2 });
+        $$ = driver->newProperty($1, "", {}, @$);
     }
     ;
 
