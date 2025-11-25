@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <iostream>
 
 #include "dtparser/DeviceTreeSource.h"
 
@@ -21,8 +22,11 @@ int main(int argc, char *argv[])
     engine.load(url);
 
     // Testing
+    dtparser::DeviceTree dt;
     dtparser::DeviceTreeSource dts("C:\\Users\\nmman\\Workspace\\DeviceTreeExplorer\\test.dts");
-    dts.parse(nullptr);
+    dts.parse(&dt);
+
+    dt.dump(std::cout);
 
     return app.exec();
 }

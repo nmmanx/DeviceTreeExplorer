@@ -29,6 +29,8 @@ public:
     std::vector<sp<Property>> getProperties() const;
     std::vector<sp<Node>> getChildren() const;
 
+    void dump(std::ostream &os, int indent = 0, bool verbose = false) const override;
+
 private:
     void addChild(const sp<Node> &child);
     void addProperty(const sp<Property> &property);

@@ -1,5 +1,4 @@
 %option noyywrap
-%option debug
 
 %x STATE_PROPERTY
 %x STATE_ARRAY

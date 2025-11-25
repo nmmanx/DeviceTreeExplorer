@@ -10,8 +10,11 @@ class DeviceTree
 public:
     DeviceTree();
 
+    void dump(std::ostream &os, bool verbose = false) const;
+
 private:
-    Node m_root;
+    sp<Node> m_rootNode;
+    friend class Driver;
 };
 
 } // namespace dtparser

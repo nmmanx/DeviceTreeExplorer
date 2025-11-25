@@ -84,3 +84,6 @@ CMakeLists.txt.user*
 *.qmlls.ini
 .cache/
 .vscode/
+
+[gpg]
+program = "C:\\Program Files (x86)\\GnuPG\\bin\\gpg.exe"

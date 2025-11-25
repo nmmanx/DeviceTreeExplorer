@@ -69,10 +69,10 @@ using namespace dtparser;
 toplevel:
     %empty {}
     | toplevel directive TERMINATOR {
-        driver->buildHierarchy($2, 0);
+        // nothing
     } |
     toplevel node TERMINATOR {
-        driver->buildHierarchy($2, 0);
+        // nothing
     }
     ;
 
@@ -100,9 +100,11 @@ node:
 node_body:
     %empty {} |
     node_body property TERMINATOR {
+        $$ = $1;
         $$.push_back($2);
     } |
     node_body node TERMINATOR {
+        $$ = $1;
         $$.push_back($2);
     }
     ;
@@ -124,6 +126,7 @@ property_component:
         $$.insert($$.end(), $2.begin(), $2.end());
     } |
     property_component COMMA label property_value label {
+        $$ = $1;
         $$.insert($$.end(), $4.begin(), $4.end());
     }
     ;
@@ -136,7 +139,7 @@ property_value:
         $$.push_back(driver->newPropertyValue($1, @1));
     } |
     PROP_VALUE_REF {
-        Reference ref = driver->makeReference($1, @1);
+        sp<Reference> ref = driver->makeReference($1, @1);
         $$.push_back(driver->newPropertyValue(ref, @1));
     } |
     PROP_ARRAY_BEGIN property_cell PROP_ARRAY_END {
@@ -154,13 +157,16 @@ property_cell:
             name: $2,
             loc: @2
         };
+        $$ = $1;
         $$.push_back(driver->newPropertyValue(label, @2));
     } |
     property_cell PROP_VALUE_U32 {
+        $$ = $1;
         $$.push_back(driver->newPropertyValue($2, @2));
     } |
     property_cell PROP_VALUE_REF {
-        Reference ref = driver->makeReference($2, @2);
+        sp<Reference> ref = driver->makeReference($2, @2);
+        $$ = $1;
         $$.push_back(driver->newPropertyValue(ref, @2));
     }
     ;
@@ -172,9 +178,11 @@ property_byte_string:
             name: $2,
             loc: @2
         };
+        $$ = $1;
         $$.push_back(driver->newPropertyValue(label, @2));
     } |
     property_byte_string PROP_VALUE_BYTE {
+        $$ = $1;
         $$.push_back(driver->newPropertyValue($2, @2));
     } |
     PROP_VALUE_BYTE_NO_SPACE {

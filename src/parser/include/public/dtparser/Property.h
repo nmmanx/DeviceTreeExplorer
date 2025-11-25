@@ -23,7 +23,7 @@ enum class PropertyType: uint8_t {
 };
 
 typedef uint8_t PropertyValueByte;
-typedef std::variant<uint32_t, Reference> PropertyValueU32;
+typedef std::variant<uint32_t, sp<Reference>> PropertyValueU32;
 typedef std::string PropertyValueString;
 
 typedef std::vector<PropertyValueU32> PropertyValueU32Array;
@@ -39,9 +39,17 @@ public:
     bool isEmpty() const;
 
     std::vector<PropertyValueType> getValues() const;
+    size_t getValuesCount() const;
+
+    void dump(std::ostream &os, int indent = 0, bool verbose = false) const override;
 
 private:
     void addValue(const PropertyValueType &value);
+
+    static std::string value2String(const PropertyValueType &value);
+    static std::string u32ToString(const PropertyValueU32 &value);
+
+    friend class Driver;
 
 private:
     PropertyType m_type;

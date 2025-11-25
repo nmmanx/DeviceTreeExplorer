@@ -1,6 +1,8 @@
 #include "dtparser/DeviceTreeSource.h"
 #include "Driver.h"
 
+#include <fstream>
+
 namespace dtparser {
 
 DeviceTreeSource::DeviceTreeSource(const fs::path& filePath, std::vector<fs::path> searchPaths)
@@ -17,7 +19,8 @@ DeviceTreeSource::DeviceTreeSource(const fs::path& filePath)
 
 ParseResult DeviceTreeSource::parse(DeviceTree *dt)
 {
-    Driver drv;
+    std::ofstream parserLogFile("./parser.log", std::ios::app);
+    Driver drv(parserLogFile);
     return drv.parse(m_filePath.string().c_str(), dt);
 }
 

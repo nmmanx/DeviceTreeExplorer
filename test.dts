@@ -35,8 +35,8 @@
         compatible = "ns16550", "ns8250";
         example = <0xf00f0000 19>, "a strange property format";
 
-        interrupt-parent = < &mpic >;
-        interrupt-parent = < &{/soc/interrupt-controller@40000} >;
+        interrupt-parent = < &cpu0 >;
+        interrupt-parent2 = < &{/soc/interrupt-controller@40000} >;
 
         ethernet0 = &EMAC0;
 

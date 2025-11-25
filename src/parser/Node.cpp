@@ -1,5 +1,7 @@
 #include "dtparser/Node.h"
 
+#include <iostream>
+
 namespace dtparser {
 
 Node::Node(
@@ -39,6 +41,29 @@ std::vector<std::shared_ptr<Property>> Node::getProperties() const
 std::vector<std::shared_ptr<Node>> Node::getChildren() const
 {
     return m_children;
+}
+
+void Node::dump(std::ostream &os, int indent, bool verbose) const
+{
+    auto unitAddressPart = m_unitAddress.empty() ? "" : "@" + m_unitAddress;
+    std::string labelPart;
+
+    if (auto label = getPrimaryLabel()) {
+        labelPart = std::string("(") + label->name + ")";
+    }
+    os << std::string(indent, ' ') << "Node: " << m_name << unitAddressPart << labelPart << std::endl;
+
+    os << std::string(indent, ' ') << "Properties:" << std::endl;
+    for (const auto &property : m_properties) {
+        property->dump(os, indent + 2, verbose);
+    }
+
+    os << std::endl;
+
+    os << std::string(indent, ' ') << "Children:" << std::endl;
+    for (const auto &child : m_children) {
+        child->dump(os, indent + 2, verbose);
+    }
 }
 
 void Node::addChild(const sp<Node> &child)

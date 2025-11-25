@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <memory>
 #include <map>
+#include <optional>
 
 #include "dtparser/DeviceTreeSource.h"
 #include "dtparser/Node.h"
@@ -60,13 +61,12 @@ public:
         const PropertyValueTypeOrLabel &value,
         const yy::parser::location_type &loc) = 0;
 
-    virtual void buildHierarchy(uint32_t child, uint32_t parent) = 0;
     virtual void buildHierarchy(uint32_t parent, const std::vector<uint32_t > &chilren) = 0;
 
-    virtual void addLabel(const std::string &label, uint32_t element, 
+    virtual void addLabel(const std::string &name, uint32_t element, 
         const yy::parser::location_type &loc) = 0;
 
-    virtual Reference makeReference(const std::string &name, const yy::parser::location_type &loc) = 0;
+    virtual sp<Reference> makeReference(const std::string &name, const yy::parser::location_type &loc) = 0;
 
     virtual ParseResult parse(const char* dtsFile, DeviceTree *dt) = 0;
 };
@@ -74,7 +74,7 @@ public:
 class Driver: public IDriver
 {
 public:
-    Driver();
+    Driver(std::ostream &parserOs);
     ~Driver() override {};
 
     uint32_t newDirective(
@@ -94,47 +94,81 @@ public:
         const PropertyValueTypeOrLabel &value,
         const yy::parser::location_type &loc) override;
 
-    void buildHierarchy(uint32_t child, uint32_t parent) override;
-    void buildHierarchy(uint32_t parent, const std::vector<uint32_t > &chilren) override;
+    void buildHierarchy(uint32_t parent, const std::vector<uint32_t> &chilren) override;
 
-    void addLabel(const std::string &label, uint32_t element, 
+    void addLabel(const std::string &name, uint32_t element, 
         const yy::parser::location_type &loc) override;
 
-    Reference makeReference(const std::string &name, const yy::parser::location_type &loc) {
-        Reference ref = {
+    sp<Reference> makeReference(const std::string &name, const yy::parser::location_type &loc) override {
+        sp<Reference> ref(new Reference{
             name: name,
             location: convertLocation(loc)
-        };
-        // save linker!
+        });
+        m_labelLinkers.push_back(&ref->linker);
         return ref;
     }
 
     ParseResult parse(const char* dtsFile, DeviceTree *dt) override;
 
+    template <typename T>
+    class Registry {
+    public:
+        Registry() = delete;
+        Registry(uint32_t firstId, uint32_t lastId): 
+            m_nextId(firstId), kFirstId(firstId), kLastId(lastId) {}
+
+        bool accept(uint32_t key) const;
+
+        uint32_t put(T val);
+        std::optional<T> get(uint32_t key) const;
+
+        void reset() {
+            m_map.clear();
+        }
+
+    private:
+        uint32_t m_nextId;
+        const uint32_t kFirstId;
+        const uint32_t kLastId;
+
+        std::map<uint32_t, T> m_map;
+    };
+
 private:
     SourceLocation convertLocation(const yy::parser::location_type &loc);
+    
+    std::string value2String(const PropertyValueTypeOrLabel &valueOrLabel);
+
+    bool isNode(uint32_t id) const;
+    bool isProperty(uint32_t id) const;
+    bool isDirective(uint32_t id) const;
+    bool isPropertyValue(uint32_t id) const;
+
+    void link();
 
 private:
     static const uint32_t NODE_ID_FIRST = 1;
-    static const uint32_t NODE_ID_LAST = 1 << 16;
+    static const uint32_t NODE_ID_LAST = 1 << 24;
 
     static const uint32_t PROP_ID_FIRST = NODE_ID_LAST + 1;
-    static const uint32_t PROP_ID_LAST = PROP_ID_FIRST + (1 << 16);
+    static const uint32_t PROP_ID_LAST = PROP_ID_FIRST + (1 << 24);
 
     static const uint32_t DIRECTIVE_ID_FIRST = PROP_ID_LAST + 1;
-    static const uint32_t DIRECTIVE_ID_LAST = DIRECTIVE_ID_FIRST + (1 << 16);
+    static const uint32_t DIRECTIVE_ID_LAST = DIRECTIVE_ID_FIRST + (1 << 24);
 
     static const uint32_t PROP_VALUE_ID_FIRST = DIRECTIVE_ID_LAST + 1;
+    static const uint32_t PROP_VALUE_ID_LAST = PROP_VALUE_ID_FIRST + (1 << 24);
 
-    uint32_t m_nextNodeId = NODE_ID_FIRST;
-    uint32_t m_nextPropId = PROP_ID_FIRST;
-    uint32_t m_nextDirectiveId = DIRECTIVE_ID_FIRST;
-    uint32_t m_nextPropValueId = PROP_VALUE_ID_FIRST;
+    Registry<sp<Node>> m_nodes;
+    Registry<sp<Property>> m_properties;
+    Registry<sp<Directive>> m_directives;
+    Registry<PropertyValueTypeOrLabel> m_propertyValues;
 
-    std::map<uint32_t, sp<Node>> m_nodes;
-    std::map<uint32_t, sp<Property>> m_properties;
-    std::map<uint32_t, sp<Directive>> m_directives;
-    std::map<uint32_t, PropertyValueType> m_propertyValues;
+    std::vector<LabelLinker*> m_labelLinkers;
+    std::vector<const Label*> m_labels;
+    sp<Node> m_rootNode;
+
+    std::ostream &m_parserOs;
 };
 
 } // namespace dtparser
