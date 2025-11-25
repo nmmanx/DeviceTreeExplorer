@@ -2,7 +2,7 @@
 add_custom_target(gen_parser
     BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/gen/dtparser.cpp
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/gen
-    COMMAND ${bison} ${CMAKE_CURRENT_SOURCE_DIR}/dtparser.y -vd
+    COMMAND ${bison} ${CMAKE_CURRENT_SOURCE_DIR}/dtparser.y -vd -Wcounterexamples
         -o ${CMAKE_CURRENT_BINARY_DIR}/gen/dtparser.cpp -H
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dtparser.y
 )
@@ -27,6 +27,9 @@ add_library(dtparser SHARED
     DeviceTree.cpp
     DeviceTreeSource.cpp
     Driver.cpp
+    Property.cpp
+    Node.cpp
+    Element.cpp
     ${PARSER_SOURCES}
 )
 

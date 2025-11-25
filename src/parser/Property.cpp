@@ -3,10 +3,8 @@
 namespace dtparser {
 
 Property::Property(
-    const std::string &name,
-    const std::string &label,
-    const std::vector<PropertyValue> &values)
-    : Element(name, label), m_type(PropertyType::UNKNOWN), m_values(values)
+    const std::string &name)
+    : Element(name), m_type(PropertyType::UNKNOWN)
 {
     // TODO: Determine property type based on values
 }
@@ -21,7 +19,7 @@ bool Property::isEmpty() const
     return m_values.empty();
 }
 
-std::vector<PropertyValue> Property::getValues() const
+std::vector<PropertyValueType> Property::getValues() const
 {
     return m_values;
 }

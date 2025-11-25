@@ -5,28 +5,33 @@
 namespace dtparser {
 
 Driver::Driver() {
-    std::cout << "Driver initialized." << std::endl;
 }
 
 uint32_t Driver::newDirective(const std::string& directive, 
     const std::vector<std::string> &args,
     const yy::parser::location_type &loc)
 {
-    std::cout << "newDirective: " << directive << std::endl;
     return 0;
 }
 
-uint32_t Driver::newNode(const std::string &name, const std::string &label,
+uint32_t Driver::newNode(
+    const std::string &fullName,
     const yy::parser::location_type &loc)
 {
-    std::cout << "newNode: " << name << " (label: " << label << ")" << std::endl;
     return 0;
 }
 
-uint32_t Driver::newProperty(const std::string &name, const std::string &label, const std::vector<PropertyValue> &values,
+uint32_t Driver::newProperty(
+    const std::string &name, 
     const yy::parser::location_type &loc)
 {
-    std::cout << "newProperty: " << name << " with " << values.size() << " values" << std::endl;
+    return 0;
+}
+
+uint32_t Driver::newPropertyValue(
+        const PropertyValueTypeOrLabel &value,
+        const yy::parser::location_type &loc)
+{
     return 0;
 }
 
@@ -36,6 +41,12 @@ void Driver::buildHierarchy(uint32_t child, uint32_t parent)
 
 void Driver::buildHierarchy(uint32_t parent, const std::vector<uint32_t> &chilren)
 {
+}
+
+void Driver::addLabel(const std::string &label, uint32_t element, 
+    const yy::parser::location_type &loc)
+{
+
 }
 
 ParseResult Driver::parse(const char* dtsFile, DeviceTree *dt)

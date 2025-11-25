@@ -24,4 +24,24 @@
         device_type = "memory";
         reg = <0x00000000 0x1000000>;
     };
+
+    nodelabel: spec {
+        interrupts = <17 0xc>;
+        clock-frequency = <0x00000001 0x00000000>;
+
+        local-mac-address = [00 00 12 34 56 78];
+        local-mac-address2 = [000012345678];
+
+        compatible = "ns16550", "ns8250";
+        example = <0xf00f0000 19>, "a strange property format";
+
+        interrupt-parent = < &mpic >;
+        interrupt-parent = < &{/soc/interrupt-controller@40000} >;
+
+        ethernet0 = &EMAC0;
+
+        reg = reglabel: <0 sizelabel: 0x1000000>;
+        prop = [ab cd ef byte4: 00 ff fe];
+        str = start: "string value" end: ;
+    };
 };

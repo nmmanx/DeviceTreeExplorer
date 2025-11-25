@@ -26,9 +26,17 @@ using sp = std::shared_ptr<T>;
 
 namespace dtparser {
 
+struct ValueLabel {
+    std::string name;
+    yy::parser::location_type loc;
+};
+
+typedef std::variant<PropertyValueType,ValueLabel> PropertyValueTypeOrLabel;
+
 struct Directive {
     std::string name;
     std::vector<std::string> args;
+    SourceLocation location;
 };
 
 class IDriver {
@@ -40,17 +48,25 @@ public:
         const std::vector<std::string> &args,
         const yy::parser::location_type &loc) = 0;
 
-    virtual uint32_t newNode(const std::string &fullName,
-        const std::string &label,
-        const yy::parser::location_type &loc) = 0; 
+    virtual uint32_t newNode(
+        const std::string &fullName,
+        const yy::parser::location_type &loc) = 0;
 
-    virtual uint32_t newProperty(const std::string &name, 
-        const std::string &label,  
-        const std::vector<PropertyValue> &values,
+    virtual uint32_t newProperty(
+        const std::string &name,
+        const yy::parser::location_type &loc) = 0;
+
+    virtual uint32_t newPropertyValue(
+        const PropertyValueTypeOrLabel &value,
         const yy::parser::location_type &loc) = 0;
 
     virtual void buildHierarchy(uint32_t child, uint32_t parent) = 0;
     virtual void buildHierarchy(uint32_t parent, const std::vector<uint32_t > &chilren) = 0;
+
+    virtual void addLabel(const std::string &label, uint32_t element, 
+        const yy::parser::location_type &loc) = 0;
+
+    virtual Reference makeReference(const std::string &name, const yy::parser::location_type &loc) = 0;
 
     virtual ParseResult parse(const char* dtsFile, DeviceTree *dt) = 0;
 };
@@ -61,21 +77,37 @@ public:
     Driver();
     ~Driver() override {};
 
-    uint32_t newDirective(const std::string& directive, 
+    uint32_t newDirective(
+        const std::string& directive, 
         const std::vector<std::string> &args,
         const yy::parser::location_type &loc) override;
 
-    uint32_t newNode(const std::string &name, 
-        const std::string &label, 
+    uint32_t newNode(
+        const std::string &fullName, 
         const yy::parser::location_type &loc) override;
 
-    uint32_t newProperty(const std::string &name, 
-        const std::string &label,  
-        const std::vector<PropertyValue> &values,
+    uint32_t newProperty(
+        const std::string &name,
+        const yy::parser::location_type &loc) override;
+
+    uint32_t newPropertyValue(
+        const PropertyValueTypeOrLabel &value,
         const yy::parser::location_type &loc) override;
 
     void buildHierarchy(uint32_t child, uint32_t parent) override;
     void buildHierarchy(uint32_t parent, const std::vector<uint32_t > &chilren) override;
+
+    void addLabel(const std::string &label, uint32_t element, 
+        const yy::parser::location_type &loc) override;
+
+    Reference makeReference(const std::string &name, const yy::parser::location_type &loc) {
+        Reference ref = {
+            name: name,
+            location: convertLocation(loc)
+        };
+        // save linker!
+        return ref;
+    }
 
     ParseResult parse(const char* dtsFile, DeviceTree *dt) override;
 
@@ -83,17 +115,26 @@ private:
     SourceLocation convertLocation(const yy::parser::location_type &loc);
 
 private:
-    static const uint32_t NODE_ID_BASE = 1;
-    static const uint32_t PROP_ID_BASE = 1 << 16;
-    static const uint32_t DIRECTIVE_ID_BASE = PROP_ID_BASE + (1 << 16);
+    static const uint32_t NODE_ID_FIRST = 1;
+    static const uint32_t NODE_ID_LAST = 1 << 16;
 
-    uint32_t m_nextNodeId = NODE_ID_BASE;
-    uint32_t m_nextPropId = PROP_ID_BASE;
-    uint32_t m_nextDirectiveId = DIRECTIVE_ID_BASE;
+    static const uint32_t PROP_ID_FIRST = NODE_ID_LAST + 1;
+    static const uint32_t PROP_ID_LAST = PROP_ID_FIRST + (1 << 16);
+
+    static const uint32_t DIRECTIVE_ID_FIRST = PROP_ID_LAST + 1;
+    static const uint32_t DIRECTIVE_ID_LAST = DIRECTIVE_ID_FIRST + (1 << 16);
+
+    static const uint32_t PROP_VALUE_ID_FIRST = DIRECTIVE_ID_LAST + 1;
+
+    uint32_t m_nextNodeId = NODE_ID_FIRST;
+    uint32_t m_nextPropId = PROP_ID_FIRST;
+    uint32_t m_nextDirectiveId = DIRECTIVE_ID_FIRST;
+    uint32_t m_nextPropValueId = PROP_VALUE_ID_FIRST;
 
     std::map<uint32_t, sp<Node>> m_nodes;
     std::map<uint32_t, sp<Property>> m_properties;
     std::map<uint32_t, sp<Directive>> m_directives;
+    std::map<uint32_t, PropertyValueType> m_propertyValues;
 };
 
 } // namespace dtparser

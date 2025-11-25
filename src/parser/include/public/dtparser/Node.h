@@ -19,7 +19,6 @@ public:
     Node(
         const std::string& path,
         const std::string& name,
-        const std::string& label = "",
         const std::string& unitAddress = "");
 
     bool isRoot() const;
@@ -27,12 +26,10 @@ public:
 
     std::string getPath() const;
     std::string getUnitAddress() const;
-    sp<Node> getParent() const;
     std::vector<sp<Property>> getProperties() const;
     std::vector<sp<Node>> getChildren() const;
 
 private:
-    void setParent(const sp<Node> &parent);
     void addChild(const sp<Node> &child);
     void addProperty(const sp<Property> &property);
 
@@ -43,8 +40,6 @@ private:
     std::string m_unitAddress;
 
     bool m_isRoot;
-    
-    sp<Node> m_parent;
 
     std::vector<sp<Property>> m_properties;
     std::vector<sp<Node>> m_children;

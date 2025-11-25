@@ -4,7 +4,6 @@
 #include <typeinfo>
 #include <variant>
 
-#include "dtparser/Node.h"
 #include "dtparser/Common.h"
 #include "dtparser/Element.h"
 
@@ -23,44 +22,42 @@ enum class PropertyType: uint8_t {
     PROP_ENCODED_ARRAY,
 };
 
-struct Phandle {
-    uint32_t id;
-};
+typedef uint8_t PropertyValueByte;
+typedef std::variant<uint32_t, Reference> PropertyValueU32;
+typedef std::string PropertyValueString;
 
-struct PropertyValue {
-    std::string label;
-    std::string raw;
-    std::variant<std::string, uint32_t, Phandle> value;
-};
+typedef std::vector<PropertyValueU32> PropertyValueU32Array;
+typedef std::vector<PropertyValueByte> PropertyValueByteString;
+
+typedef std::variant<PropertyValueByte, PropertyValueU32, PropertyValueString> PropertyValueType;
 
 class Property: public Element {
 public:
-    Property(
-        const std::string &name,
-        const std::string &label,
-        const std::vector<PropertyValue>& values
-    );
+    Property(const std::string &name);
 
     PropertyType getType() const;
     bool isEmpty() const;
 
-    std::vector<PropertyValue> getValues() const;
+    std::vector<PropertyValueType> getValues() const;
+
+private:
+    void addValue(const PropertyValueType &value);
 
 private:
     PropertyType m_type;
-    std::vector<PropertyValue> m_values;
+    std::vector<PropertyValueType> m_values;
 };
 
 // Standard Property Subclasses
 
-class CompatibleProperty : public Property {
-public:
-    CompatibleProperty(const std::string &label, const PropertyValue &value)
-        : Property("compatible", label, { value }) {}
+// class CompatibleProperty : public Property {
+// public:
+//     CompatibleProperty(const std::string &label, const PropertyValue &value)
+//         : Property("compatible", label, { value }) {}
 
-    CompatibleProperty(const PropertyValue &value)
-        : CompatibleProperty("", value) {}
-};
+//     CompatibleProperty(const PropertyValue &value)
+//         : CompatibleProperty("", value) {}
+// };
 
 } // namespace dtparser
 
