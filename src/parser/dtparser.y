@@ -63,7 +63,6 @@ using namespace dtparser;
 %nterm <std::vector<uint32_t>> property_byte_string
 
 %%
-
 %start toplevel;
 
 toplevel:

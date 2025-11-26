@@ -1,4 +1,7 @@
 %option noyywrap
+%option nodefault
+
+%option debug
 
 %x STATE_PROPERTY
 %x STATE_ARRAY
@@ -15,7 +18,10 @@ using token = yy::parser::token;
 
 U32_DEC     ([0-9]+)
 U32_HEX	    (0[xX]([a-fA-F0-9]){1,8}|[0-9]+)
+U32         ({U32_DEC}|{U32_HEX}) 
+PATH	    (([a-zA-Z0-9,._+-/]+[^/])(@({U32}))?)
 BLANK	    ([ \t\r])
+NEWLINE	    ([\n])
 
 %%
 
@@ -28,7 +34,7 @@ BLANK	    ([ \t\r])
     return token::DIRECTIVE_DTS_VERSION;
 }
 
-([a-zA-Z0-9,\._+-]+(@({U32_DEC}|{U32_HEX}))?)|"/" {
+([a-zA-Z0-9,._+-]+(@({U32}))?)|"/" {
     yylval->build<std::string>(yytext);
     return token::NODE_NAME;
 }
@@ -41,7 +47,7 @@ BLANK	    ([ \t\r])
     return token::LABEL;
 }
 
-"&"[a-zA-Z0-9_]+: {
+("&"[a-zA-Z0-9_]+)|("&{"{BLANK}*{PATH}{BLANK}*"}") {
     yylval->build<std::string>(yytext + 1);
     return token::PROP_VALUE_REF;
 }
@@ -64,12 +70,12 @@ BLANK	    ([ \t\r])
     return token::LABEL;
 }
 
-<STATE_PROPERTY>{U32_HEX}|{U32_DEC} {
+<STATE_PROPERTY>{U32} {
     yylval->build<uint32_t>((uint32_t)std::stoul(yytext, nullptr, 0));
     return token::PROP_VALUE_U32;
 }
 
-<STATE_PROPERTY>"&"[a-zA-Z0-9_]+: {
+<STATE_PROPERTY>("&"[a-zA-Z0-9_]+)|("&""{"{BLANK}*{PATH}{BLANK}*"}") {
     yylval->build<std::string>(yytext + 1);
     return token::PROP_VALUE_REF;
 }
@@ -127,6 +133,7 @@ BLANK	    ([ \t\r])
 }
 
 {BLANK}                         ;
+{NEWLINE}                       ;
 <STATE_PROPERTY>{BLANK}         ;
 <STATE_BYTE_STRING>{BLANK}      ;
 
