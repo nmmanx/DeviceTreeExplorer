@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     dtparser::DeviceTreeSource dts("C:\\Users\\nmman\\Workspace\\DeviceTreeExplorer\\test.dts");
     dts.parse(&dt);
 
-    dt.dump(std::cout);
+    dt.dump(std::cout, true);
 
     return app.exec();
 }

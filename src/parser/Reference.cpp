@@ -50,4 +50,20 @@ std::string Reference::toString() const
     return std::string("&") + m_name;
 }
 
+std::optional<wp<Node>> Reference::getTargetNode() const
+{
+    if (std::holds_alternative<wp<Node>>(m_target)) {
+        return std::get<wp<Node>>(m_target);
+    }
+    return std::nullopt;
+}
+
+std::optional<Label> Reference::getTargetLabel() const
+{
+    if (std::holds_alternative<Label>(m_target)) {
+        return std::get<Label>(m_target);
+    }
+    return std::nullopt;
+}
+
 } // namespace dtparser

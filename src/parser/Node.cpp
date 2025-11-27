@@ -48,20 +48,15 @@ void Node::dump(std::ostream &os, int indent, bool verbose) const
     std::string labelPart;
 
     if (auto label = getPrimaryLabel()) {
-        labelPart = std::string("(") + label->name + ")";
+        labelPart = std::string(" (") + label->name + ")";
     }
-    os << std::string(indent, ' ') << "Node: " << m_name << unitAddressPart << labelPart << std::endl;
+    os << std::string(indent, ' ') << "+ " << getPath() << m_name << unitAddressPart << labelPart << std::endl;
 
-    os << std::string(indent, ' ') << "Properties:" << std::endl;
     for (const auto &property : m_properties) {
-        property->dump(os, indent + 2, verbose);
+        property->dump(os, indent + 4, verbose);
     }
-
-    os << std::endl;
-
-    os << std::string(indent, ' ') << "Children:" << std::endl;
     for (const auto &child : m_children) {
-        child->dump(os, indent + 2, verbose);
+        child->dump(os, indent + 4, verbose);
     }
 }
 

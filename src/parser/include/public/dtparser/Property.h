@@ -23,13 +23,15 @@ enum class PropertyType: uint8_t {
 };
 
 typedef uint8_t PropertyValueByte;
-typedef std::variant<uint32_t, sp<Reference>> PropertyValueU32;
+typedef uint32_t PropertyValueU32;
+typedef sp<Reference> PropertyValueReference;
 typedef std::string PropertyValueString;
 
 typedef std::vector<PropertyValueU32> PropertyValueU32Array;
 typedef std::vector<PropertyValueByte> PropertyValueByteString;
 
-typedef std::variant<PropertyValueByte, PropertyValueU32, PropertyValueString> PropertyValueType;
+typedef std::variant<PropertyValueByte, PropertyValueU32, 
+    PropertyValueReference, PropertyValueString> PropertyValueType;
 
 class Property: public Element {
 public:
@@ -47,7 +49,10 @@ private:
     void addValue(const PropertyValueType &value);
 
     static std::string value2String(const PropertyValueType &value);
-    static std::string u32ToString(const PropertyValueU32 &value);
+    static bool isU32(const PropertyValueType &value);
+    static bool isReference(const PropertyValueType &value);
+    static bool isString(const PropertyValueType &value);
+    static bool isByte(const PropertyValueType &value);
 
     friend class Driver;
 

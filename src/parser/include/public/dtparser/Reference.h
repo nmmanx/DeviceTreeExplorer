@@ -36,15 +36,17 @@ public:
 
     std::string getName() const;
     SourceLocation getLocation() const;
-    std::variant<sp<Label>, sp<Node>> getTarget() const;
     std::string toString() const;
+
+    std::optional<Label> getTargetLabel() const;
+    std::optional<wp<Node>> getTargetNode() const;
 
     ReferenceResolver getResolver() const;
 
 private:
     std::string m_name;
     SourceLocation m_location;
-    std::variant<Label, wp<Node>> m_target;
+    std::variant<std::monostate, Label, wp<Node>> m_target;
     ReferenceResolver m_resolver;
 };
 
