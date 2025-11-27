@@ -9,7 +9,7 @@
 
 namespace dtparser {
 
-class Node;
+class Reference;
 
 enum class PropertyType: uint8_t {
     UNKNOWN,

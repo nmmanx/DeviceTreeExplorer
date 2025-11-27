@@ -17,7 +17,6 @@ class Node: public Element
 {
 public:
     Node(
-        const std::string& path,
         const std::string& name,
         const std::string& unitAddress = "");
 
@@ -34,6 +33,7 @@ public:
 private:
     void addChild(const sp<Node> &child);
     void addProperty(const sp<Property> &property);
+    void setPath(const std::string &path);
 
     friend class Driver;
 

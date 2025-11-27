@@ -32,7 +32,7 @@ uint32_t Driver::newNode(
     const std::string &fullName,
     const yy::parser::location_type &loc)
 {
-    sp<Node> node = std::make_shared<Node>("", fullName, "");
+    sp<Node> node = std::make_shared<Node>(fullName, "");
     node->setLocation(convertLocation(loc));
     if (fullName == "/") {
         m_rootNode = node;
@@ -94,11 +94,15 @@ void Driver::buildHierarchy(uint32_t parent, const std::vector<uint32_t> &chilre
                     prop->addValue(value);
                 } else if (std::holds_alternative<ValueLabel>(valueOrLabel)) {
                     ValueLabel valueLabel = std::get<ValueLabel>(valueOrLabel);
-                    
-                    auto label = prop->addLabel(valueLabel.name,
-                        prop->getValuesCount(), convertLocation(valueLabel.loc));
+                    Label label {
+                        name: valueLabel.name,
+                        location: convertLocation(valueLabel.loc),
+                        target: prop,
+                        position: (int)prop->getValuesCount()
+                    };
+                    prop->addLabel(label);
 
-                    std::cout << "Prop<-Label: " << prop->getName() << "<-" << label->name << std::endl;
+                    std::cout << "Prop<-Label: " << prop->getName() << "<-" << label.name << std::endl;
                     m_labels.push_back(label);
                 } else {
                     std::cout << "Unknown value type: " << valueOrLabel.index() << std::endl;
@@ -116,14 +120,37 @@ void Driver::addLabel(const std::string &name, uint32_t element,
     }
     if (isNode(element)) {
         sp<Node> node = m_nodes.get(element).value();
-        auto label = node->addLabel(name, -1, convertLocation(loc));
+        Label label {
+            name: name,
+            location: convertLocation(loc),
+            target: node,
+            position: -1
+        };
+        node->addLabel(label);
         m_labels.push_back(label);
 
     } else if (isProperty(element)) {
         sp<Property> prop = m_properties.get(element).value();
-        auto label = prop->addLabel(name, -1, convertLocation(loc));
+        Label label {
+            name: name,
+            location: convertLocation(loc),
+            target: prop,
+            position: -1
+        };
+        prop->addLabel(label);
         m_labels.push_back(label);
     }
+}
+
+sp<Reference> Driver::makeReference(const std::string &name, const yy::parser::location_type &loc)
+{
+    sp<Reference> ref = std::make_shared<Reference>(name, convertLocation(loc));
+    if (name.substr(0, 1) == "{") {
+        m_pathReferenceResolvers.push_back(ref->getResolver());
+    } else {
+        m_labelReferenceResolvers.push_back(ref->getResolver());
+    }
+    return ref;
 }
 
 ParseResult Driver::parse(const char* dtsFile, DeviceTree *dt)
@@ -142,9 +169,7 @@ ParseResult Driver::parse(const char* dtsFile, DeviceTree *dt)
     parser.set_debug_level(1);
     parser.set_debug_stream(m_parserOs);
 
-    if (parser.parse() == 0) {
-        link();
-    } else {
+    if (parser.parse() != 0) {
         std::cerr << "Parsing failed for file: " << dtsFile << std::endl;
     }
 
@@ -152,6 +177,8 @@ ParseResult Driver::parse(const char* dtsFile, DeviceTree *dt)
 
     if (m_rootNode != nullptr) {
         dt->m_rootNode = m_rootNode;
+        buildPaths(m_rootNode);
+        resolveReferences();
         result.success = true;
     }
     return result;
@@ -204,15 +231,42 @@ bool Driver::isPropertyValue(uint32_t id) const
     return m_propertyValues.accept(id);
 }
 
-void Driver::link()
+void Driver::resolveReferences()
 {
+    int count = 0;
     for (auto label : m_labels) {
-        for (auto linker : m_labelLinkers) {
-            if ((*linker)(label)) {
-                std::cout << "Linked label: " << label->name << std::endl;
+        for (auto resolver : m_labelReferenceResolvers) {
+            if (resolver(&label, nullptr)) {
+                std::cout << "Resolved reference: " << label.name << std::endl;
+                count++;
             }
         }
     }
+
+    auto allNodes = m_nodes.getAll();
+    for (auto node : allNodes) {
+        for (auto resolver : m_pathReferenceResolvers) {
+            if (resolver(nullptr, node)) {
+                std::cout << "Resolved reference: " << node->getName() << std::endl;
+                count++;
+            }
+        }
+    }
+
+    std::cout << "Resolved " << count << " references" << std::endl;
+}
+
+void Driver::buildPaths(const sp<Node> &root)
+{
+    root->setPath("");
+    std::function<void(const sp<Node>&)> pathSetter = [&pathSetter](const sp<Node> &parent) {
+        for (const auto &child : parent->getChildren()) {
+            child->setPath(parent->getPath() + "/" + child->getName());
+            pathSetter(child);
+        }
+    };
+    pathSetter(root);
+    root->setPath("/");
 }
 
 template <typename T>
@@ -249,6 +303,16 @@ std::optional<T> Driver::Registry<T>::get(uint32_t key) const
         return std::nullopt;
     }
     return itr->second;
+}
+
+template <typename T>
+std::vector<T> Driver::Registry<T>::getAll() const
+{
+    std::vector<T> result;
+    for (const auto &item : m_map) {
+        result.push_back(item.second);
+    }
+    return result;
 }
 
 } // namespace dtparser

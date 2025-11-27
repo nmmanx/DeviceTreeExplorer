@@ -99,14 +99,7 @@ public:
     void addLabel(const std::string &name, uint32_t element, 
         const yy::parser::location_type &loc) override;
 
-    sp<Reference> makeReference(const std::string &name, const yy::parser::location_type &loc) override {
-        sp<Reference> ref(new Reference{
-            name: name,
-            location: convertLocation(loc)
-        });
-        m_labelLinkers.push_back(&ref->linker);
-        return ref;
-    }
+    sp<Reference> makeReference(const std::string &name, const yy::parser::location_type &loc) override;
 
     ParseResult parse(const char* dtsFile, DeviceTree *dt) override;
 
@@ -121,6 +114,8 @@ public:
 
         uint32_t put(T val);
         std::optional<T> get(uint32_t key) const;
+
+        std::vector<T> getAll() const;
 
         void reset() {
             m_map.clear();
@@ -144,7 +139,8 @@ private:
     bool isDirective(uint32_t id) const;
     bool isPropertyValue(uint32_t id) const;
 
-    void link();
+    void resolveReferences();
+    void buildPaths(const sp<Node> &root);
 
 private:
     static const uint32_t NODE_ID_FIRST = 1;
@@ -164,8 +160,9 @@ private:
     Registry<sp<Directive>> m_directives;
     Registry<PropertyValueTypeOrLabel> m_propertyValues;
 
-    std::vector<LabelLinker*> m_labelLinkers;
-    std::vector<const Label*> m_labels;
+    std::vector<ReferenceResolver> m_labelReferenceResolvers;
+    std::vector<ReferenceResolver> m_pathReferenceResolvers;
+    std::vector<Label> m_labels;
     sp<Node> m_rootNode;
 
     std::ostream &m_parserOs;

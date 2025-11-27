@@ -5,10 +5,9 @@
 namespace dtparser {
 
 Node::Node(
-    const std::string &path,
     const std::string &name,
     const std::string &unitAddress)
-    : Element(name), m_path(path), m_unitAddress(unitAddress), m_isRoot(false)
+    : Element(name), m_unitAddress(unitAddress), m_isRoot(false)
 {
     // TODO: Determina name and unit address
 }
@@ -74,6 +73,11 @@ void Node::addChild(const sp<Node> &child)
 void Node::addProperty(const sp<Property> &property)
 {
     m_properties.push_back(property);
+}
+
+void Node::setPath(const std::string &path)
+{
+    m_path = path;
 }
 
 } // namespace dtparser

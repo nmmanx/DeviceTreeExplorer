@@ -30,6 +30,7 @@ add_library(dtparser SHARED
     Property.cpp
     Node.cpp
     Element.cpp
+    Reference.cpp
     ${PARSER_SOURCES}
 )
 

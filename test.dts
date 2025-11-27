@@ -36,7 +36,7 @@
         example = <0xf00f0000 19>, "a strange property format";
 
         interrupt-parent = < &cpu0 >;
-        interrupt-parent2 = < &{/soc/interrupt-controller@40000} >;
+        interrupt-parent2 = < &{/cpus/cpu@1} >;
 
         ethernet0 = &EMAC0;
 

@@ -4,20 +4,8 @@ namespace dtparser {
 
 const SourceLocation SourceLocation::NOT_SPECIFIED = SourceLocation {};
 
-const Label* Labelable::addLabel(const std::string &name, int pos,
-    const SourceLocation &loc)
-{
-    if (name.empty()) {
-        return nullptr;
-    }
-    Label label = Label {
-        name: name,
-        location: loc,
-        target: this,
-        position: pos
-    };
+void Labelable::addLabel(const Label &label) {
     m_labels.push_back(label);
-    return &m_labels.back();
 }
 
 std::optional<Label> Labelable::getPrimaryLabel() const {
