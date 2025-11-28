@@ -3,8 +3,9 @@
 
 #include <filesystem>
 #include <vector>
+#include <utility>
 
-#include "DeviceTree.h"
+#include "dtparser/DeviceTree.h"
 
 namespace fs = std::filesystem;
 
@@ -12,6 +13,8 @@ namespace dtparser {
 
 struct ParseResult {
     bool success;
+    std::string errorMessage;
+    SourceLocation errorLocation;
 };
 
 class DeviceTreeSource
@@ -20,7 +23,7 @@ public:
     DeviceTreeSource(const fs::path& filePath, std::vector<fs::path> searchPaths);
     DeviceTreeSource(const fs::path& filePath);
 
-    ParseResult parse(DeviceTree *dt);
+    std::pair<ParseResult, sp<DeviceTree>> parse();
 
 private:
     fs::path m_filePath;

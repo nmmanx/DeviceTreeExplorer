@@ -17,11 +17,15 @@ DeviceTreeSource::DeviceTreeSource(const fs::path& filePath)
 
 }
 
-ParseResult DeviceTreeSource::parse(DeviceTree *dt)
+std::pair<ParseResult, sp<DeviceTree>> DeviceTreeSource::parse()
 {
+    sp<DeviceTree> dt(new DeviceTree());
     std::ofstream parserLogFile("./parser.log", std::ios::app);
     Driver drv(parserLogFile);
-    return drv.parse(m_filePath.string().c_str(), dt);
+
+    auto parseResult = drv.parse(m_filePath.string().c_str(), dt.get());
+
+    return std::make_pair(parseResult, dt);
 }
 
 }

@@ -22,11 +22,15 @@ int main(int argc, char *argv[])
     engine.load(url);
 
     // Testing
-    dtparser::DeviceTree dt;
     dtparser::DeviceTreeSource dts("C:\\Users\\nmman\\Workspace\\DeviceTreeExplorer\\test.dts");
-    dts.parse(&dt);
+    auto [ result, dt ] = dts.parse();
 
-    dt.dump(std::cout, true);
+    if (result.success) {
+        dt->dump(std::cout, true);
+    } else {
+        std::cerr << "Error: " << result.errorMessage << std::endl;
+        app.exit(1);
+    }
 
     return app.exec();
 }

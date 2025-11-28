@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 
 #include "Driver.h"
 
@@ -32,7 +33,7 @@ uint32_t Driver::newNode(
     const std::string &fullName,
     const yy::parser::location_type &loc)
 {
-    sp<Node> node = std::make_shared<Node>(fullName, "");
+    sp<Node> node(new Node(fullName));
     node->setLocation(convertLocation(loc));
     if (fullName == "/") {
         m_rootNode = node;
@@ -45,7 +46,7 @@ uint32_t Driver::newProperty(
     const std::string &name, 
     const yy::parser::location_type &loc)
 {
-    sp<Property> property = std::make_shared<Property>(name);
+    sp<Property> property(new Property(name));
     property->setLocation(convertLocation(loc));
     std::cout << "New Property: " << name << std::endl;
     return m_properties.put(property);
@@ -144,7 +145,8 @@ void Driver::addLabel(const std::string &name, uint32_t element,
 
 sp<Reference> Driver::makeReference(const std::string &name, const yy::parser::location_type &loc)
 {
-    sp<Reference> ref = std::make_shared<Reference>(name, convertLocation(loc));
+    sp<Reference> ref(new Reference(name, convertLocation(loc)));
+
     if (name.substr(0, 1) == "{") {
         m_pathReferenceResolvers.push_back(ref->getResolver());
     } else {
@@ -171,6 +173,8 @@ ParseResult Driver::parse(const char* dtsFile, DeviceTree *dt)
 
     if (parser.parse() != 0) {
         std::cerr << "Parsing failed for file: " << dtsFile << std::endl;
+        result.errorLocation = convertLocation(m_errorLocation);
+        result.errorMessage = m_errorMessage;
     }
 
     scan_end();
@@ -180,8 +184,20 @@ ParseResult Driver::parse(const char* dtsFile, DeviceTree *dt)
         buildPaths(m_rootNode);
         resolveReferences();
         result.success = true;
+    } else {
+        result.success = false;
+        result.errorMessage = "No root node found";
     }
+    
+    cleanUp();
+
     return result;
+}
+
+void Driver::setError(const yy::parser::location_type &loc, const std::string &message  )
+{
+    m_errorLocation = loc;
+    m_errorMessage = message;
 }
 
 SourceLocation Driver::convertLocation(const yy::parser::location_type &loc)
@@ -267,6 +283,17 @@ void Driver::buildPaths(const sp<Node> &root)
     };
     pathSetter(root);
     root->setPath("/");
+}
+
+void Driver::cleanUp()
+{
+    m_nodes.reset();
+    m_properties.reset();
+    m_directives.reset();
+    m_propertyValues.reset();
+    m_labels.clear();
+    m_labelReferenceResolvers.clear();
+    m_pathReferenceResolvers.clear();
 }
 
 template <typename T>

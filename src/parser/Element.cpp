@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "dtparser/Element.h"
 
 namespace dtparser {

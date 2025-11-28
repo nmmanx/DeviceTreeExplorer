@@ -5,8 +5,6 @@
 #include <vector>
 #include <cstdint>
 #include <memory>
-#include <stdexcept>
-#include <optional>
 #include <variant>
 
 template <typename T>
@@ -15,7 +13,22 @@ using sp = std::shared_ptr<T>;
 template <typename T>
 using wp = std::weak_ptr<T>;
 
+template <typename T>
+using up = std::unique_ptr<T>;
+
 namespace dtparser {
+
+class Reference;
+
+using PropertyValueByte = uint8_t;
+using PropertyValueU32 = uint32_t;
+using PropertyValueReference = sp<Reference>;
+using PropertyValueString = std::string;
+
+using PropertyValueU32Array = std::vector<PropertyValueU32>;
+using PropertyValueByteString = std::vector<PropertyValueByte>;
+
+using PropertyValueType = std::variant<PropertyValueByte, PropertyValueU32, PropertyValueReference, PropertyValueString>;
 
 struct SourceLocation {
     std::string filename;

@@ -1,15 +1,19 @@
 #include "dtparser/Node.h"
+#include "dtparser/Property.h"
 
 #include <iostream>
+#include <string>
 
 namespace dtparser {
 
-Node::Node(
-    const std::string &name,
-    const std::string &unitAddress)
-    : Element(name), m_unitAddress(unitAddress), m_isRoot(false)
+Node::Node(const std::string &fullName): Element(fullName)
 {
-    // TODO: Determina name and unit address
+    auto pos = fullName.find('@');
+    if (pos != std::string::npos) {
+        m_unitAddress = fullName.substr(pos + 1);
+    }
+
+    m_isRoot = (fullName == "/");
 }
 
 bool Node::isRoot() const
@@ -30,6 +34,16 @@ std::string Node::getPath() const
 std::string Node::getUnitAddress() const
 {
     return m_unitAddress;
+}
+
+std::optional<std::shared_ptr<Property>> Node::getProperty(const std::string &name) const
+{
+    for (const auto &property : m_properties) {
+        if (property->getName() == name) {
+            return property;
+        }
+    }
+    return std::nullopt;
 }
 
 std::vector<std::shared_ptr<Property>> Node::getProperties() const

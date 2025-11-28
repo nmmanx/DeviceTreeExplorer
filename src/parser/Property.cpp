@@ -1,21 +1,15 @@
 #include "dtparser/Node.h"
 #include "dtparser/Property.h"
+#include "dtparser/Reference.h"
 
 #include <string>
 #include <iostream>
 
 namespace dtparser {
 
-Property::Property(
-    const std::string &name)
-    : Element(name), m_type(PropertyType::UNKNOWN)
+Property::Property(const std::string &name)
+    : Element(name)
 {
-    // TODO: Determine property type based on values
-}
-
-PropertyType Property::getType() const
-{
-    return m_type;
 }
 
 bool Property::isEmpty() const
@@ -26,6 +20,77 @@ bool Property::isEmpty() const
 std::vector<PropertyValueType> Property::getValues() const
 {
     return m_values;
+}
+
+std::optional<uint32_t> Property::getAsU32() const
+{
+    if (m_values.size() != 1 || !isU32(m_values[0])) {
+        return std::nullopt;
+    }
+    return std::get<uint32_t>(m_values[0]);
+}
+
+std::optional<sp<Reference>> Property::getAsReference() const
+{
+    if (m_values.size() != 1 || !isReference(m_values[0])) {
+        return std::nullopt;
+    }
+    return std::get<sp<Reference>>(m_values[0]);
+}
+
+std::optional<std::string> Property::getAsString() const
+{
+    if (m_values.size() != 1 || !isString(m_values[0])) {
+        return std::nullopt;
+    }
+    return std::get<std::string>(m_values[0]);
+}
+
+std::optional<uint8_t> Property::getAsByte() const
+{
+    if (m_values.size() != 1 || !isByte(m_values[0])) {
+        return std::nullopt;
+    }
+    return std::get<uint8_t>(m_values[0]);
+}
+
+std::optional<std::vector<std::string>> Property::getAsStringList() const
+{
+    std::vector<std::string> result;
+    for (const auto &value : m_values) {
+        if (isString(value)) {
+            result.push_back(std::get<std::string>(value));
+        } else {
+            return std::nullopt;
+        }
+    }
+    return result;
+}
+
+std::optional<std::vector<uint32_t>> Property::getAsU32Array() const
+{
+    std::vector<uint32_t> result;
+    for (const auto &value : m_values) {
+        if (isU32(value)) {
+            result.push_back(std::get<uint32_t>(value));
+        } else {
+            return std::nullopt;
+        }
+    }
+    return result;
+}
+
+std::optional<std::vector<uint8_t>> Property::getAsByteString() const
+{
+    std::vector<uint8_t> result;
+    for (const auto &value : m_values) {
+        if (isByte(value)) {
+            result.push_back(std::get<uint8_t>(value));
+        } else {
+            return std::nullopt;
+        }
+    }
+    return result;
 }
 
 size_t Property::getValuesCount() const

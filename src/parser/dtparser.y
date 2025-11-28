@@ -193,4 +193,5 @@ property_byte_string:
 
 void yy::parser::error(const location_type& l, const std::string& m) {
     std::cerr << l << ": " << m << std::endl;
+    driver->setError(l, m);
 }

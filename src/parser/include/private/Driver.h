@@ -11,6 +11,7 @@
 #include "dtparser/DeviceTreeSource.h"
 #include "dtparser/Node.h"
 #include "dtparser/Property.h"
+#include "dtparser/Reference.h"
 
 #include "dtparser.hpp"
 
@@ -69,6 +70,8 @@ public:
     virtual sp<Reference> makeReference(const std::string &name, const yy::parser::location_type &loc) = 0;
 
     virtual ParseResult parse(const char* dtsFile, DeviceTree *dt) = 0;
+
+    virtual void setError(const yy::parser::location_type &loc, const std::string &message) = 0;
 };
 
 class Driver: public IDriver
@@ -102,6 +105,8 @@ public:
     sp<Reference> makeReference(const std::string &name, const yy::parser::location_type &loc) override;
 
     ParseResult parse(const char* dtsFile, DeviceTree *dt) override;
+
+    void setError(const yy::parser::location_type &loc, const std::string &message) override;
 
     template <typename T>
     class Registry {
@@ -142,6 +147,8 @@ private:
     void resolveReferences();
     void buildPaths(const sp<Node> &root);
 
+    void cleanUp();
+
 private:
     static const uint32_t NODE_ID_FIRST = 1;
     static const uint32_t NODE_ID_LAST = 1 << 24;
@@ -166,6 +173,9 @@ private:
     sp<Node> m_rootNode;
 
     std::ostream &m_parserOs;
+
+    yy::parser::location_type m_errorLocation;
+    std::string m_errorMessage;
 };
 
 } // namespace dtparser

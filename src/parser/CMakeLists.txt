@@ -31,6 +31,7 @@ add_library(dtparser SHARED
     Node.cpp
     Element.cpp
     Reference.cpp
+    Label.cpp
     ${PARSER_SOURCES}
 )
 
