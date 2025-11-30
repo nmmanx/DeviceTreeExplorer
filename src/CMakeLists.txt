@@ -1,5 +1,9 @@
 qt_add_executable(appDeviceTreeExplorer
     main.cpp
+    TreeItem.h
+    TreeItem.cpp
+    DeviceTreeModel.h
+    DeviceTreeModel.cpp
 )
 
 qt_add_qml_module(appDeviceTreeExplorer
@@ -19,8 +23,6 @@ set_target_properties(appDeviceTreeExplorer PROPERTIES
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE FALSE
 )
-
-add_subdirectory(parser)
 
 target_link_libraries(appDeviceTreeExplorer
     PRIVATE Qt6::Quick

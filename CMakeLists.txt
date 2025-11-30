@@ -8,4 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 
 add_subdirectory(src)
+add_subdirectory(src/parser)
 add_subdirectory(tools)
+
+enable_testing()
+add_subdirectory(tests)

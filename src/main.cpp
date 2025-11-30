@@ -21,16 +21,5 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
     engine.load(url);
 
-    // Testing
-    dtparser::DeviceTreeSource dts("C:\\Users\\nmman\\Workspace\\DeviceTreeExplorer\\test.dts");
-    auto [ result, dt ] = dts.parse();
-
-    if (result.success) {
-        dt->dump(std::cout, true);
-    } else {
-        std::cerr << "Error: " << result.errorMessage << std::endl;
-        app.exit(1);
-    }
-
     return app.exec();
 }
