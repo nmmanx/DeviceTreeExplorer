@@ -5,4 +5,8 @@ Window {
     height: 480
     visible: true
     title: qsTr("Hello World")
+
+    DeviceTreeGraph {
+        anchors.fill: parent
+    }
 }

@@ -2,11 +2,13 @@
 #include <QQmlApplicationEngine>
 #include <iostream>
 
-#include "dtparser/DeviceTreeSource.h"
+#include "DeviceTreeItem.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+
+    qmlRegisterType<DeviceTreeItem>("DeviceTree", 1, 0, "DeviceTreeItem");
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/DeviceTreeExplorer/Main.qml"));

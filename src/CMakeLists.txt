@@ -1,9 +1,15 @@
+set(CMAKE_AUTOMOC ON)
+
+find_package(Qt6 REQUIRED COMPONENTS Quick)
+
 qt_add_executable(appDeviceTreeExplorer
     main.cpp
     TreeItem.h
     TreeItem.cpp
     DeviceTreeModel.h
     DeviceTreeModel.cpp
+    DeviceTreeItem.h
+    DeviceTreeItem.cpp
 )
 
 qt_add_qml_module(appDeviceTreeExplorer
@@ -11,6 +17,7 @@ qt_add_qml_module(appDeviceTreeExplorer
     VERSION 1.0
     QML_FILES
         Main.qml
+        DeviceTreeGraph.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -34,7 +41,6 @@ add_custom_command(
     TARGET appDeviceTreeExplorer POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:dtparser> $<TARGET_FILE_DIR:appDeviceTreeExplorer>
-    DEPENDS dtparser
 )
 
 include(GNUInstallDirs)
