@@ -15,18 +15,12 @@ private slots:
 
 void TestDeviceTreeModel::testDeviceTreeModel()
 {
-    dtparser::DeviceTreeSource dts("C:\\Users\\nmman\\Workspace\\DeviceTreeExplorer\\test.dts");
-    auto [ result, dt ] = dts.parse();
+    DeviceTreeModel model;
+    model.setDtsFilePath(QUrl("file:///C:/Users/nmman/Workspace/DeviceTreeExplorer/test.dts"));
 
-    if (result.success) {
-        dt->dump(std::cout, true);
-    } else {
-        qDebug() << "Error: " << result.errorMessage;
-        return;
-    }
-    DeviceTreeModel model(dt);
-
-    QAbstractItemModelTester tester(&model);
+    connect(&model, &DeviceTreeModel::dataChanged, [&]() {
+        QAbstractItemModelTester tester(&model);
+    });
 }
 
 QTEST_APPLESS_MAIN(TestDeviceTreeModel)

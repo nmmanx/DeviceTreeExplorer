@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<DeviceTreeItem>("DeviceTree", 1, 0, "DeviceTreeItem");
+    qmlRegisterType<DeviceTreeModel>("DeviceTreeModel", 1, 0, "DeviceTreeModel");
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/DeviceTreeExplorer/Main.qml"));

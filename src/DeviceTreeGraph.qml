@@ -1,10 +1,13 @@
 import QtQuick
 import DeviceTree 1.0
+import DeviceTreeModel 1.0
 
 Flickable {
     id: viewPort
     anchors.fill: parent
     clip: true
+
+    property var model: DeviceTreeModel
 
     contentWidth: surface.width * surface.scale
     contentHeight: surface.height * surface.scale
@@ -52,6 +55,7 @@ Flickable {
             DeviceTreeItem {
                 id: deviceTreeSource
                 anchors.fill: parent
+                model: viewPort.model
             }
         }
 

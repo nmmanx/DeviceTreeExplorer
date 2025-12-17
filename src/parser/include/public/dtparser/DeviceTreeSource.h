@@ -23,7 +23,9 @@ public:
     DeviceTreeSource(const fs::path& filePath, std::vector<fs::path> searchPaths);
     DeviceTreeSource(const fs::path& filePath);
 
-    std::pair<ParseResult, sp<DeviceTree>> parse();
+    std::pair<ParseResult, up<DeviceTree>> parse();
+
+    fs::path getFilePath() const;
 
 private:
     fs::path m_filePath;

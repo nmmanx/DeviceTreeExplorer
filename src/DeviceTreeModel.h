@@ -2,8 +2,9 @@
 #define DEVICE_TREE_MODE_H
 
 #include <QAbstractItemModel>
+#include <QUrl>
 
-#include "dtparser/DeviceTree.h"
+#include "dtparser/DeviceTreeSource.h"
 #include "TreeItem.h"
 
 using namespace dtparser;
@@ -11,10 +12,11 @@ using namespace dtparser;
 class DeviceTreeModel: public QAbstractItemModel
 {
     Q_OBJECT
+    Q_PROPERTY(QUrl dtsFilePath READ getDtsFilePath WRITE setDtsFilePath NOTIFY dtsFilePathChanged)
 public:
     Q_DISABLE_COPY_MOVE(DeviceTreeModel)
 
-    DeviceTreeModel(const sp<DeviceTree> &dt);
+    DeviceTreeModel();
     ~DeviceTreeModel() override;
 
     QModelIndex index(int row, int column,
@@ -28,9 +30,22 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const override;
 
+    QUrl getDtsFilePath() const;
+    void setDtsFilePath(const QUrl &dtsFilePath);
+
+signals:
+    void dataChanged();
+    void dataError(const QString &error);
+
 private:
-    sp<DeviceTree> m_dt;
     TreeItem *m_rootItem;
+    DeviceTreeSource *m_dts;
+    DeviceTree *m_dt;
+
+    void onDtsFilePathChanged(const QUrl &dtsFilePath);
+
+signals:
+    void dtsFilePathChanged(const QUrl &dtsFilePath);
 };
 
 #endif
