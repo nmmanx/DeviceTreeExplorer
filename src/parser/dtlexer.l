@@ -4,7 +4,6 @@
 %option debug
 
 %x STATE_PROPERTY
-%x STATE_ARRAY
 %x STATE_BYTE_STRING
 
 %{
@@ -132,10 +131,24 @@ NEWLINE	    ([\n])
     return token::PROP_BYTE_STR_END;
 }
 
-{BLANK}                         ;
-{NEWLINE}                       ;
-<STATE_PROPERTY>{BLANK}         ;
-<STATE_BYTE_STRING>{BLANK}      ;
+{BLANK}|{NEWLINE}                           ;
+<STATE_PROPERTY>{BLANK}|{NEWLINE}           ;
+<STATE_BYTE_STRING>{BLANK}|{NEWLINE}        ;
+
+. { 
+    fprintf(stderr, "Unexpected character: %s\n", yytext); 
+    return token::YYerror;
+}
+
+<STATE_PROPERTY>. { 
+    fprintf(stderr, "Unexpected character: %s\n", yytext); 
+    return token::YYerror;
+}
+
+<STATE_BYTE_STRING>. { 
+    fprintf(stderr, "Unexpected character: %s\n", yytext); 
+    return token::YYerror;
+}
 
 %%
 
