@@ -26,6 +26,9 @@ uint32_t Driver::newDirective(
         location: convertLocation(loc)
     });
     std::cout << "New Directive: " << name << std::endl;
+    for (const auto &arg : args) {
+        std::cout << "Arg: " << arg << std::endl;
+    }
     return m_directives.put(directive);
 }
 

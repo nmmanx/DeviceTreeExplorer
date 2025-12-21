@@ -20,8 +20,12 @@ namespace dtparser {
 %define parse.error verbose
 
 %code {
+#include <cstring>
 #include <Driver.h>
 using namespace dtparser;
+
+static std::vector<std::string> split(const std::string& s, char delimiter);
+static std::string trim(const std::string& str);
 }
 
 %define api.value.type variant
@@ -38,6 +42,7 @@ using namespace dtparser;
 
 %token <std::string> DIRECTIVE_DTS_VERSION
 %token <std::string> DIRECTIVE_INCLUDE
+%token <std::string> DIRECTIVE_MEMRESERVE
 
 %token <std::string> LABEL
 %token <std::string> NODE_NAME
@@ -76,8 +81,14 @@ toplevel:
     ;
 
 directive:
-    DIRECTIVE_DTS_VERSION { 
+    DIRECTIVE_DTS_VERSION {
         $$ = driver->newDirective($1, {}, @$);
+    } |
+    DIRECTIVE_MEMRESERVE {
+        int nameLen = strlen("/memreserve/");
+        std::string argStr = trim($1.substr(nameLen, $1.length() - nameLen));
+        auto args = split(argStr, ' ');
+        $$ = driver->newDirective("/memreserve/", args, @$);
     }
     ;
 
@@ -194,4 +205,31 @@ property_byte_string:
 void yy::parser::error(const location_type& l, const std::string& m) {
     std::cerr << l << ": " << m << std::endl;
     driver->setError(l, m);
+}
+
+static std::vector<std::string> split(const std::string& s, char delimiter)
+{
+    std::vector<std::string> result;
+    std::string token;
+
+    for (char c : s) {
+        if (c == delimiter) {
+            result.push_back(token);
+            token.clear();
+        } else {
+            token += c;
+        }
+    }
+    result.push_back(token);
+
+    return result;
+}
+
+static std::string trim(const std::string& str) {
+    size_t first = str.find_first_not_of(" \t\n\r");
+    size_t last = str.find_last_not_of(" \t\n\r");
+    if (first <= last) {
+        return str.substr(first, last - first + 1);
+    }
+    return str;
 }

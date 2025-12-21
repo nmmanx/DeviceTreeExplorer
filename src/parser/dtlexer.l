@@ -19,18 +19,23 @@ U32_DEC     ([0-9]+)
 U32_HEX	    (0[xX]([a-fA-F0-9]){1,8}|[0-9]+)
 U32         ({U32_DEC}|{U32_HEX}) 
 PATH	    (([a-zA-Z0-9,._+-/]+[^/])(@({U32}))?)
-BLANK	    ([ \t\r])
-NEWLINE	    ([\n])
+BLANK	    ([ \t\r\n])
 
 %%
 
-";"     { return token::TERMINATOR; }
+{BLANK}*";"     { return token::TERMINATOR; }
+
 "{"     { return token::NODE_BEGIN; }
 "}"     { return token::NODE_END; }
 
 "/"dts-v1"/" {
     yylval->build<std::string>(yytext);
     return token::DIRECTIVE_DTS_VERSION;
+}
+
+"/"memreserve"/"({U32_HEX}|" ")+ {
+    yylval->build<std::string>(yytext);
+    return token::DIRECTIVE_MEMRESERVE;
 }
 
 ([a-zA-Z0-9,._+-]+(@({U32}))?)|"/" {
@@ -102,7 +107,7 @@ NEWLINE	    ([\n])
     return token::PROP_VALUE_STR;
 }
 
-<STATE_PROPERTY>";" {
+<STATE_PROPERTY>{BLANK}*";" {
     BEGIN INITIAL;
     return token::TERMINATOR;
 }
@@ -131,9 +136,9 @@ NEWLINE	    ([\n])
     return token::PROP_BYTE_STR_END;
 }
 
-{BLANK}|{NEWLINE}                           ;
-<STATE_PROPERTY>{BLANK}|{NEWLINE}           ;
-<STATE_BYTE_STRING>{BLANK}|{NEWLINE}        ;
+{BLANK}                           ;
+<STATE_PROPERTY>{BLANK}           ;
+<STATE_BYTE_STRING>{BLANK}        ;
 
 . { 
     fprintf(stderr, "Unexpected character: %s\n", yytext); 

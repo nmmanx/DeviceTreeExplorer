@@ -1,5 +1,7 @@
 /dts-v1/;
 
+/memreserve/ 0x80000000 0x00010000;
+
 / {
     #address-cells = <1>;
     #size-cells = <1>;
