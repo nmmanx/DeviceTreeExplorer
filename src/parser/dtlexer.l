@@ -5,6 +5,8 @@
 
 %x STATE_PROPERTY
 %x STATE_BYTE_STRING
+%x STATE_BLOCK_COMMENTS
+%x STATE_LINE_COMMENTS
 
 %{
 #include <stdio.h>
@@ -22,6 +24,26 @@ PATH	    (([a-zA-Z0-9,._+-/]+[^/])(@({U32}))?)
 BLANK	    ([ \t\r\n])
 
 %%
+
+"/*" {
+    BEGIN STATE_BLOCK_COMMENTS;
+}
+
+<STATE_BLOCK_COMMENTS>"*/" {
+    BEGIN INITIAL;
+}
+
+<STATE_BLOCK_COMMENTS>([^*]|\*+[^*/])* ;
+
+"//" {
+    BEGIN STATE_LINE_COMMENTS;
+}
+
+<STATE_LINE_COMMENTS>\n {
+    BEGIN INITIAL;
+}
+
+<STATE_LINE_COMMENTS>[^\n]* ;
 
 {BLANK}*";"     { return token::TERMINATOR; }
 
@@ -152,6 +174,11 @@ BLANK	    ([ \t\r\n])
 
 <STATE_BYTE_STRING>. { 
     fprintf(stderr, "Unexpected character: %s\n", yytext); 
+    return token::YYerror;
+}
+
+<STATE_BLOCK_COMMENTS>.* {
+    fprintf(stderr, "Unexpected character: %s\n", yytext);
     return token::YYerror;
 }
 
