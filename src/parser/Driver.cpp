@@ -1,4 +1,5 @@
 #include <iostream>
+#include <deque>
 #include <stdexcept>
 
 #include "Driver.h"
@@ -10,8 +11,7 @@ Driver::Driver(std::ostream &parserOs)
       m_directives(DIRECTIVE_ID_FIRST, DIRECTIVE_ID_LAST),
       m_properties(PROP_ID_FIRST, PROP_ID_LAST),
       m_propertyValues(PROP_VALUE_ID_FIRST, PROP_VALUE_ID_LAST),
-      m_parserOs(parserOs),
-      m_rootNode(nullptr) {
+      m_parserOs(parserOs) {
 
 }
 
@@ -38,9 +38,6 @@ uint32_t Driver::newNode(
 {
     sp<Node> node(new Node(fullName));
     node->setLocation(convertLocation(loc));
-    if (fullName == "/") {
-        m_rootNode = node;
-    }
     std::cout << "New Node: " << fullName << std::endl;
     return m_nodes.put(node);
 }
@@ -116,6 +113,14 @@ void Driver::buildHierarchy(uint32_t parent, const std::vector<uint32_t> &chilre
     }
 }
 
+void Driver::setTopLevel(uint32_t id)
+{
+    if (isNode(id)) {
+        sp<Node> node = m_nodes.get(id).value();
+        m_topLevels.push_back(node);
+    }
+}
+
 void Driver::addLabel(const std::string &name, uint32_t element, 
     const yy::parser::location_type &loc)
 {
@@ -182,10 +187,13 @@ ParseResult Driver::parse(const char* dtsFile, DeviceTree *dt)
 
     scan_end();
 
-    if (m_rootNode != nullptr) {
-        dt->m_rootNode = m_rootNode;
-        buildPaths(m_rootNode);
-        resolveReferences();
+    if (m_topLevels.size() > 0) {
+        for (auto &node : m_topLevels) {
+            buildPaths(node);
+        }
+        auto root = buildTree();
+        resolveReferences(root);
+        dt->m_rootNode = root;
         result.success = true;
     } else {
         result.success = false;
@@ -250,7 +258,7 @@ bool Driver::isPropertyValue(uint32_t id) const
     return m_propertyValues.accept(id);
 }
 
-void Driver::resolveReferences()
+void Driver::resolveReferences(const sp<Node> &root)
 {
     int count = 0;
     for (auto label : m_labels) {
@@ -262,7 +270,7 @@ void Driver::resolveReferences()
         }
     }
 
-    auto allNodes = m_nodes.getAll();
+    auto allNodes = flatten(root);
     for (auto node : allNodes) {
         for (auto resolver : m_pathReferenceResolvers) {
             if (resolver(nullptr, node)) {
@@ -286,6 +294,65 @@ void Driver::buildPaths(const sp<Node> &root)
     };
     pathSetter(root);
     root->setPath("/");
+}
+
+sp<Node> Driver::buildTree() {
+    std::map<std::string, sp<Node>> pathToNode; // path to node
+    std::deque<sp<Node>> queue;
+    sp<Node> root = nullptr;
+
+    for (const auto &node: m_topLevels) {
+        queue.push_back(node);
+    }
+
+    while(!queue.empty()) {
+        auto node = queue.front();
+        queue.pop_front();
+        auto path = node->getPath();
+
+        if (auto itr2 = pathToNode.find(path); itr2 != pathToNode.end()) {
+            auto mainNode = itr2->second;
+
+            std::cout << "Merging node: " << path << std::endl;
+            auto parent = static_cast<Node*>(mainNode->getParent().get());
+
+            // move children to the selected node
+            for (const auto &child : node->getChildren()) {
+                child->setParent(mainNode);
+                mainNode->addChild(child);
+            }
+            // remove the unwanted node
+            if (parent != nullptr) {
+                std::cout << "Removing node: " << node->getName() << std::endl;
+                parent->removeChild(node);
+            } else {
+                m_topLevels.erase(std::remove(m_topLevels.begin(), m_topLevels.end(), node), m_topLevels.end());
+            }
+        } else {
+            pathToNode[path] = node;
+            if (node->getName() == "/") {
+                root = node;
+            }
+        }
+
+        for (const auto &child : node->getChildren()) {
+            queue.push_back(child);
+        }
+    }
+
+    return root;
+}
+
+std::vector<sp<Node>> Driver::flatten(const sp<Node> &root) {
+    std::vector<sp<Node>> result;
+    std::function<void(const sp<Node>&)> flatten = [&flatten, &result](const sp<Node> &parent) {
+        for (const auto &child : parent->getChildren()) {
+            flatten(child);
+        }
+        result.push_back(parent);
+    };
+    flatten(root);
+    return result;
 }
 
 void Driver::cleanUp()

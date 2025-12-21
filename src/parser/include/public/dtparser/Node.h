@@ -27,6 +27,7 @@ private:
     Node(const std::string& fullName);
 
     void addChild(const sp<Node> &child);
+    void removeChild(const sp<Node> &child);
     void addProperty(const sp<Property> &property);
     void setPath(const std::string &path);
 

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 namespace dtparser {
 
@@ -77,6 +78,11 @@ void Node::dump(std::ostream &os, int indent, bool verbose) const
 void Node::addChild(const sp<Node> &child)
 {
     m_children.push_back(std::move(child));
+}
+
+void Node::removeChild(const sp<Node> &child)
+{
+    m_children.erase(std::remove(m_children.begin(), m_children.end(), child), m_children.end());
 }
 
 void Node::addProperty(const sp<Property> &property)

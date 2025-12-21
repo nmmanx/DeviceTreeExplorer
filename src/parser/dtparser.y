@@ -76,7 +76,7 @@ toplevel:
         // nothing
     } |
     toplevel node TERMINATOR {
-        // nothing
+        driver->setTopLevel($2);
     }
     ;
 

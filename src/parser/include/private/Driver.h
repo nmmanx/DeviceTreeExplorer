@@ -63,6 +63,7 @@ public:
         const yy::parser::location_type &loc) = 0;
 
     virtual void buildHierarchy(uint32_t parent, const std::vector<uint32_t > &chilren) = 0;
+    virtual void setTopLevel(uint32_t id) = 0;
 
     virtual void addLabel(const std::string &name, uint32_t element, 
         const yy::parser::location_type &loc) = 0;
@@ -98,6 +99,7 @@ public:
         const yy::parser::location_type &loc) override;
 
     void buildHierarchy(uint32_t parent, const std::vector<uint32_t> &chilren) override;
+    void setTopLevel(uint32_t id) override;
 
     void addLabel(const std::string &name, uint32_t element, 
         const yy::parser::location_type &loc) override;
@@ -144,8 +146,11 @@ private:
     bool isDirective(uint32_t id) const;
     bool isPropertyValue(uint32_t id) const;
 
-    void resolveReferences();
     void buildPaths(const sp<Node> &root);
+    sp<Node> buildTree();
+    void resolveReferences(const sp<Node> &root);
+    
+    std::vector<sp<Node>> flatten(const sp<Node> &root);
 
     void cleanUp();
 
@@ -170,7 +175,7 @@ private:
     std::vector<ReferenceResolver> m_labelReferenceResolvers;
     std::vector<ReferenceResolver> m_pathReferenceResolvers;
     std::vector<Label> m_labels;
-    sp<Node> m_rootNode;
+    std::vector<sp<Node>> m_topLevels;
 
     std::ostream &m_parserOs;
 
