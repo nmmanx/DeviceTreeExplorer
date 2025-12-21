@@ -4,8 +4,9 @@ import QtQuick.Dialogs
 import DeviceTreeModel 1.0
 
 ApplicationWindow {
-    width: 1024
-    height: 768
+    id: mainWin
+    width: 1152
+    height: 648
     visible: true
     title: qsTr("DeviceTreeExplorer")
 
@@ -40,10 +41,42 @@ ApplicationWindow {
 
     DeviceTreeModel {
         id: dtModel
+
+        onDataChanged: {
+            treeView.model = dtModel
+        }
     }
 
-    DeviceTreeGraph {
+    SplitView {
         anchors.fill: parent
-        model: dtModel
+        orientation: Qt.Horizontal
+
+        // Left Panel
+        Rectangle {
+            implicitWidth: mainWin.width * 0.3
+            SplitView.minimumWidth: 100
+
+            TreeView {
+                id: treeView
+                anchors.fill: parent
+                delegate: TreeViewDelegate {} 
+
+                columnWidthProvider: function(column) {
+                    if (column === 0) return 150;
+                    if (column === 1) return 300;
+                    return 0;
+                }
+            }
+        }
+
+        // Right Panel
+        Rectangle {
+            SplitView.fillWidth: true // Takes up remaining space
+            
+            DeviceTreeGraph {
+                anchors.fill: parent
+                model: dtModel
+            }
+        }
     }
 }
